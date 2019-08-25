@@ -20,8 +20,8 @@ public class Converter {
     
     // Explanation to equations:
     // C = MaxFrameLength/Bandwidth
-    // T = Frame Period
-    // R = Bandwidth
+    // T = Frame Period sec
+    // R = Bandwidth    bits/sec
     
     private final static Map<String, Server> SERVERS = new HashMap<>();
     
@@ -35,16 +35,19 @@ public class Converter {
             final double t = flow.getMinRetransmissionInterval();
             final double rate = (c)/(t) *r;  
             final double burst = (c) * r; 
+            //TODO: Must be decided on the model what kind of arrivalCurve to use
             ArrivalCurve arrival_curve = Curve.getFactory().createTokenBucket(rate, burst);
             for (final Path path : flow.getPaths()) {
-                result.addFlow(createName(flow), arrival_curve, createPath(path, result, network.getBandwidth()));
+                result.addFlow(createName(flow, path), arrival_curve, createPath(path, result, network.getBandwidth()));
             }
         }
         return result;
     }
       
-    private static final String createName(final Flow flow) {
-        return flow.getName();
+    private static final String createName(final Flow flow, final Path path) {
+        final String srcName = path.getLinks().get(0).getSrcPort().getPort().getDevice().getName();
+        final String dstName = path.getLinks().get(path.getLinks().size()-1).getSrcPort().getPort().getDevice().getName();
+        return flow.getName() + "(" + srcName + " - " + dstName + ")";
     }
     
     private static final List<Server> createPath(final Path path, final ServerGraph graph, final double bandwidth) throws Exception {
