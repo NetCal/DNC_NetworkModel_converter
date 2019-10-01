@@ -35,18 +35,22 @@ public class Converter {
         final ServerGraph result = new ServerGraph();
         for (final Flow flow : network.getFlows() ) {
             //Flow->Flow
-            final double r = network.getBandwidth();
-            final double c = flow.getMaxLenght()/r;
-            final double t = flow.getMinRetransmissionInterval();
-            final double rate = (c)/(t) *r;  
-            final double burst = (c) * r; 
             //TODO: Must be decided on the model what kind of arrivalCurve to use
-            ArrivalCurve arrival_curve = Curve.getFactory().createTokenBucket(rate, burst);
+            ArrivalCurve arrival_curve = createArrivalCurve(network, flow);
             for (final Path path : flow.getPaths()) {
                 result.addFlow(createName(flow, path), arrival_curve, createPath(flow, path, result, network));
             }
         }
         return result;
+    }
+
+    private static ArrivalCurve createArrivalCurve(final Network network, final Flow flow) {
+        final double r = network.getBandwidth();
+        final double c = flow.getMaxLenght()/r;
+        final double t = flow.getMinRetransmissionInterval();
+        final double rate = (c)/(t) *r;  
+        final double burst = (c) * r; 
+        return Curve.getFactory().createTokenBucket(rate, burst);
     }
       
     private static final String createName(final Flow flow, final Path path) {
