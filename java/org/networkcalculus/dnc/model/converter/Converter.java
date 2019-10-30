@@ -148,18 +148,7 @@ public class Converter {
             for (final VirtualLink vl : ((NetworkInterface)(port.getPort())).getVirtualLinks()) {
                 result.add(vl);
             }
-        } else {
-            for (final var flow : network.getFlows()) {
-                for (final var path : flow.getPaths()) {
-                    for (final var link : path.getLinks()) {
-                        if (link.getSrcPort() == port) {
-                            result.add(flow);
-                        }
-                    }
-                }
-            }
-         
-        }
+        } 
         return result;
     }
 }
