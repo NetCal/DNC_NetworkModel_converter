@@ -21,7 +21,7 @@ import org.networkcalculus.dnc.model.ethernet.VirtualLink;
 import org.networkcalculus.dnc.network.server_graph.Server;
 import org.networkcalculus.dnc.network.server_graph.ServerGraph;
 
-public class Converter {
+public class EthernetConverter {
     
     // Explanation to equations:
     // C = MaxFrameLength/Bandwidth
@@ -30,12 +30,17 @@ public class Converter {
     
     private final static Map<String, Server> SERVERS = new HashMap<>();
     
+    private EthernetConverter() {
+        
+    }
+    
     public static final ServerGraph convert(final Network network) throws Exception {
         //Network->Graph
         final ServerGraph result = new ServerGraph();
         for (final Flow flow : network.getFlows() ) {
             //Flow->Flow
             //TODO: Must be decided on the model what kind of arrivalCurve to use
+            //FIXME: arrival curve needs correction for higher prio curves!!!
             ArrivalCurve arrival_curve = createArrivalCurve(network, flow);
             for (final Path path : flow.getPaths()) {
                 result.addFlow(createName(flow, path), arrival_curve, createPath(flow, path, result, network));
@@ -68,7 +73,7 @@ public class Converter {
             final String portName = port.getName() + "#PRIO" + flow.getPriority();
             Server server = SERVERS.get(portName);
             if (server == null) {
-                final ServiceCurve sc = Curve.getFactory().createRateLatency(calculateBandwidth(flow, port, network), calculateLatency(flow, port, network));
+                final ServiceCurve sc = Curve.getFactory().createRateLatency(calculateRate(flow, port, network), calculateLatency(flow, port, network));
                 server = graph.addServer(port.getName(), sc);
                 //TODO: ??show this on model level??
                 server.useMaxSC(false);
@@ -84,7 +89,7 @@ public class Converter {
         return result;
     }
 
-    private static double calculateBandwidth(final Flow flow, final OutPort port, final Network network) {
+    private static double calculateRate(final Flow flow, final OutPort port, final Network network) {
         double bandwidth = network.getBandwidth();
         double result = bandwidth;
         final Set<Flow> vls = getVLsOnPort(port, network);
