@@ -18,6 +18,7 @@ import org.networkcalculus.dnc.model.OutPort;
 import org.networkcalculus.dnc.model.Path;
 import org.networkcalculus.dnc.model.ethernet.NetworkInterface;
 import org.networkcalculus.dnc.model.ethernet.VirtualLink;
+import org.networkcalculus.dnc.model.ethernet.rc.RCVirtualLink;
 import org.networkcalculus.dnc.network.server_graph.Server;
 import org.networkcalculus.dnc.network.server_graph.ServerGraph;
 
@@ -150,8 +151,10 @@ public class EthernetConverter {
     private static Set<Flow> getVLsOnPort(final OutPort port, final Network network) {
         final Set<Flow> result = new HashSet<>();
         if (port.getPort() instanceof NetworkInterface) {
-            for (final VirtualLink vl : ((NetworkInterface)(port.getPort())).getVirtualLinks()) {
-                result.add(vl);
+	    for (final VirtualLink vl : ((NetworkInterface) (port.getPort())).getVirtualLinks()) {
+		if (vl instanceof RCVirtualLink) {
+		    result.add(vl);
+		}
             }
         } 
         return result;
